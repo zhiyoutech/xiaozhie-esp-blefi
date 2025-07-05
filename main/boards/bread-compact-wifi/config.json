@@ -1,0 +1,67 @@
+{
+    "target": "esp32s3",
+    "builds": [
+        {
+            "name": "bread-compact-wifi",
+            "sdkconfig_append": [
+                "CONFIG_OLED_SSD1306_128X32=y",
+                "CONFIG_COMPILER_OPTIMIZATION_PERF = y",
+                "CONFIG_BT_ENABLED=y",
+                "CONFIG_BT_GATTC_ENABLE=n",
+                "CONFIG_BT_BLE_SMP_ENABLE=n",
+                "CONFIG_BT_MULTI_CONNECTION_ENBALE=n",
+                "CONFIG_BT_BLE_DYNAMIC_ENV_MEMORY=y",
+                "CONFIG_BT_BLE_50_FEATURES_SUPPORTED=n",
+                "CONFIG_BT_BLE_42_FEATURES_SUPPORTED=y",
+                "CONFIG_ESP_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y",
+                "CONFIG_GPTIMER_ISR_HANDLER_IN_IRAM=n",
+                "CONFIG_SPI_MASTER_ISR_IN_IRAM=n",
+                "CONFIG_SPI_SLAVE_ISR_IN_IRAM=n",
+                "CONFIG_UART_ISR_IN_IRAM=n",
+                "CONFIG_ESP_SPI_BUS_LOCK_ISR_FUNCS_IN_IRAM=n",
+                "CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH=y",
+                "CONFIG_RINGBUF_PLACE_ISR_FUNCTIONS_INTO_FLASH=y",
+                "CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=n",
+                "CONFIG_ESP_WIFI_ENABLE_WPA3_OWE_STA=n",
+                "CONFIG_ESP_WIFI_SOFTAP_SUPPORT=n",
+                "CONFIG_HAL_SPI_MASTER_FUNC_IN_IRAM=n",
+                "CONFIG_HAL_SPI_SLAVE_FUNC_IN_IRAM=n",
+                "CONFIG_HEAP_PLACE_FUNCTION_INTO_FLASH=y",
+                "CONFIG_VFS_SELECT_IN_RAM=n",
+                "CONFIG_GATTC_ENABLE=n",
+                "CONFIG_BLE_SMP_ENABLE=n"
+            ]
+        },
+        {
+            "name": "bread-compact-wifi-128x64",
+            "sdkconfig_append": [
+                "CONFIG_OLED_SSD1306_128X64=y",
+                                "CONFIG_COMPILER_OPTIMIZATION_PERF = y",
+                "CONFIG_BT_ENABLED=y",
+                "CONFIG_BT_GATTC_ENABLE=n",
+                "CONFIG_BT_BLE_SMP_ENABLE=n",
+                "CONFIG_BT_MULTI_CONNECTION_ENBALE=n",
+                "CONFIG_BT_BLE_DYNAMIC_ENV_MEMORY=y",
+                "CONFIG_BT_BLE_50_FEATURES_SUPPORTED=n",
+                "CONFIG_BT_BLE_42_FEATURES_SUPPORTED=y",
+                "CONFIG_ESP_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y",
+                "CONFIG_GPTIMER_ISR_HANDLER_IN_IRAM=n",
+                "CONFIG_SPI_MASTER_ISR_IN_IRAM=n",
+                "CONFIG_SPI_SLAVE_ISR_IN_IRAM=n",
+                "CONFIG_UART_ISR_IN_IRAM=n",
+                "CONFIG_ESP_SPI_BUS_LOCK_ISR_FUNCS_IN_IRAM=n",
+                "CONFIG_RINGBUF_PLACE_FUNCTIONS_INTO_FLASH=y",
+                "CONFIG_RINGBUF_PLACE_ISR_FUNCTIONS_INTO_FLASH=y",
+                "CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=n",
+                "CONFIG_ESP_WIFI_ENABLE_WPA3_OWE_STA=n",
+                "CONFIG_ESP_WIFI_SOFTAP_SUPPORT=n",
+                "CONFIG_HAL_SPI_MASTER_FUNC_IN_IRAM=n",
+                "CONFIG_HAL_SPI_SLAVE_FUNC_IN_IRAM=n",
+                "CONFIG_HEAP_PLACE_FUNCTION_INTO_FLASH=y",
+                "CONFIG_VFS_SELECT_IN_RAM=n",
+                "CONFIG_GATTC_ENABLE=n",
+                "CONFIG_BLE_SMP_ENABLE=n"
+            ]
+        }
+    ]
+}
