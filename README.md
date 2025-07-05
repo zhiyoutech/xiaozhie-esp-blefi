@@ -2,6 +2,8 @@
 
 关于小智ESP的具体内容，请参考github项目： https://github.com/78/xiaozhi-esp32
 
+本项目的xiaozhi-esp32版本：1.7.6
+
 ## 适配蓝牙配网，作者修改的内容
 1，在main\idf_component.yml文件中，增加对外部库blefi的引用；
  
