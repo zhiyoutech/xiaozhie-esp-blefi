@@ -4,6 +4,9 @@
 
 本项目的xiaozhi-esp32版本：1.7.6
 
+编译方法：请使用小智官方推荐的办法，即在VisualStudio Code的ESP-IDF终端中执行脚本：python.exe .\scripts\release.py xmini-c3
+其中，xmini-c3用你的开发板名称代替。
+
 ## 适配蓝牙配网，作者修改的内容
 1，在main\idf_component.yml文件中，增加对外部库blefi的引用；
  
