@@ -1,13 +1,13 @@
 #include "sscma_camera.h"
 #include "mcp_server.h"
-#include "display.h"
+#include "lvgl_display.h"
+#include "lvgl_image.h"
 #include "board.h"
 #include "system_info.h"
 #include "config.h"
 
 #include <esp_log.h>
 #include <esp_heap_caps.h>
-#include <img_converters.h>
 #include <cstring>
 
 #define TAG "SscmaCamera"
@@ -83,6 +83,16 @@ SscmaCamera::SscmaCamera(esp_io_expander_handle_t io_exp_handle) {
 
     sscma_client_init(sscma_client_handle_);
 
+    ESP_LOGI(TAG, "SSCMA client initialized");
+    // 设置分辨率
+    // 3 = 640x480
+    if (sscma_client_set_sensor(sscma_client_handle_, 1, 3, true)) {
+        ESP_LOGE(TAG, "Failed to set sensor");
+        sscma_client_del(sscma_client_handle_);
+        sscma_client_handle_ = NULL;
+        return;
+    }
+
     // 获取设备信息
     sscma_client_info_t *info;
     if (sscma_client_get_info(sscma_client_handle_, &info, true) == ESP_OK) {
@@ -90,8 +100,6 @@ SscmaCamera::SscmaCamera(esp_io_expander_handle_t io_exp_handle) {
             info->id ? info->id : "NULL", 
             info->name ? info->name : "NULL");
     }
-    sscma_client_set_sensor(sscma_client_handle_, 1, 3, true); // 3 = 640x480
-
     // 初始化JPEG数据的内存
     jpeg_data_.len = 0;
     jpeg_data_.buf = (uint8_t*)heap_caps_malloc(IMG_JPEG_BUF_SIZE, MALLOC_CAP_SPIRAM);;
@@ -101,9 +109,10 @@ SscmaCamera::SscmaCamera(esp_io_expander_handle_t io_exp_handle) {
     }
 
     //初始化JPEG解码
-    jpeg_dec_config_t config = { .output_type = JPEG_RAW_TYPE_RGB565_LE, .rotate = JPEG_ROTATE_0D };
-    jpeg_dec_ = jpeg_dec_open(&config);
-    if (!jpeg_dec_) {
+    jpeg_error_t err;
+    jpeg_dec_config_t config = { .output_type = JPEG_PIXEL_FORMAT_RGB565_LE, .rotate = JPEG_ROTATE_0D };
+    err = jpeg_dec_open(&config, &jpeg_dec_);
+    if ( err != JPEG_ERR_OK ) {
         ESP_LOGE(TAG, "Failed to open JPEG decoder");
         return;
     }
@@ -178,7 +187,6 @@ void SscmaCamera::SetExplainUrl(const std::string& url, const std::string& token
 bool SscmaCamera::Capture() {
 
     SscmaData data;
-    size_t output_len = 0;
     int ret = 0;
     
     if (sscma_client_handle_ == nullptr) {
@@ -235,9 +243,10 @@ bool SscmaCamera::Capture() {
     }
 
     // 显示预览图片
-    auto display = Board::GetInstance().GetDisplay();
+    auto display = dynamic_cast<LvglDisplay*>(Board::GetInstance().GetDisplay());
     if (display != nullptr) {
-        display->SetPreviewImage(&preview_image_);
+        auto image = std::make_unique<LvglSourceImage>(&preview_image_);
+        display->SetPreviewImage(std::move(image));
     }
     return true;
 }
@@ -271,7 +280,8 @@ std::string SscmaCamera::Explain(const std::string& question) {
         return "{\"success\": false, \"message\": \"Image explain URL or token is not set\"}";
     }
 
-    auto http = Board::GetInstance().CreateHttp();
+    auto network = Board::GetInstance().GetNetwork();
+    auto http = network->CreateHttp(3);
     // 构造multipart/form-data请求体
     std::string boundary = "----ESP32_CAMERA_BOUNDARY";
     
