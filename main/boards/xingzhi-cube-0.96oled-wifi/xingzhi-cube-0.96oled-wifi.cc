@@ -8,7 +8,7 @@
 #include "led/single_led.h"
 #include "assets/lang_config.h"
 #include "power_save_timer.h"
-#include "../xingzhi-cube-1.54tft-wifi/power_manager.h"
+#include "power_manager.h"
 
 #include <wifi_station.h>
 
