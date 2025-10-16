@@ -3,23 +3,19 @@
 #include "display.h"
 #include "application.h"
 #include "system_info.h"
-#include "font_awesome_symbols.h"
 #include "settings.h"
 #include "assets/lang_config.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <esp_http.h>
-#include <esp_mqtt.h>
-#include <esp_udp.h>
-#include <tcp_transport.h>
-#include <tls_transport.h>
-#include <web_socket.h>
+#include <esp_network.h>
 #include <esp_log.h>
 
+#include <font_awesome.h>
 #include <wifi_station.h>
 #include <wifi_configuration_ap.h>
 #include <ssid_manager.h>
+#include "afsk_demod.h"
 #include "blefi.h"
 
 static const char *TAG = "WifiBoard";
