@@ -10,6 +10,8 @@
 
 5、针对ESP32 S3类型单片机，以xingzhi-cube-0.96oled-wifi开发板为例，参照xingzhi-cube-0.96oled-wifi\config.json文件和xingzhi-cube-0.96oled-wifi\xingzhi-cube-0.96oled-wifi.cc文件修改对应内容；
 
+编译代码时，一定使用小智官方推荐的python ./scripts/release.py 脚本
+
 ## 使用蓝牙配网功能对手机的要求
 1，使用蓝牙配网功能前，必须在手机上打开Wifi、位置、蓝牙的开关；
 
