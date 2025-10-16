@@ -12,8 +12,6 @@ Es8374AudioCodec::Es8374AudioCodec(void* i2c_master_handle, i2c_port_t i2c_port,
     input_channels_ = 1; // 输入通道数
     input_sample_rate_ = input_sample_rate;
     output_sample_rate_ = output_sample_rate;
-    input_gain_ = 30;
-
     pa_pin_ = pa_pin;
     CreateDuplexChannels(mclk, bclk, ws, dout, din);
 
@@ -148,7 +146,7 @@ void Es8374AudioCodec::EnableInput(bool enable) {
             .mclk_multiple = 0,
         };
         ESP_ERROR_CHECK(esp_codec_dev_open(input_dev_, &fs));
-        ESP_ERROR_CHECK(esp_codec_dev_set_in_gain(input_dev_, input_gain_));
+        ESP_ERROR_CHECK(esp_codec_dev_set_in_gain(input_dev_, AUDIO_CODEC_DEFAULT_MIC_GAIN));
     } else {
         ESP_ERROR_CHECK(esp_codec_dev_close(input_dev_));
     }

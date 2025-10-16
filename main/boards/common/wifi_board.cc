@@ -18,9 +18,8 @@
 #include "afsk_demod.h"
 #include "blefi.h"
 
-static const char *TAG = "WifiBoard";
 
-#define CONFIG_SSID_PASSWORD_BY_BLE
+static const char *TAG = "WifiBoard";
 
 WifiBoard::WifiBoard() {
     Settings settings("wifi", true);
@@ -39,7 +38,7 @@ void WifiBoard::EnterWifiConfigMode() {
     auto& application = Application::GetInstance();
     application.SetDeviceState(kDeviceStateWifiConfiguring);
 
-#ifdef CONFIG_SSID_PASSWORD_BY_BLE
+#if CONFIG_SSID_PASSWORD_BY_BLE
     ble_register_wifi_config_callback([](char *ssid, char *password) {
         // Save ssid and password to SsidManager
         auto& ssid_manager = SsidManager::GetInstance();
@@ -52,12 +51,15 @@ void WifiBoard::EnterWifiConfigMode() {
     }
     
     std::string hint = Lang::Strings::CONNECT_TO_BLE;
-    application.Alert(Lang::Strings::WIFI_CONFIG_MODE, hint.c_str(), "", Lang::Sounds::P3_WIFICONFIG);
+
 #else
     auto& wifi_ap = WifiConfigurationAp::GetInstance();
     wifi_ap.SetLanguage(Lang::CODE);
     wifi_ap.SetSsidPrefix("Xiaozhi");
     wifi_ap.Start();
+
+    // 等待 1.5 秒显示开发板信息
+    vTaskDelay(pdMS_TO_TICKS(1500));
 
     // 显示 WiFi 配置 AP 的 SSID 和 Web 服务器 URL
     std::string hint = Lang::Strings::CONNECT_TO_HOTSPOT;
@@ -67,14 +69,24 @@ void WifiBoard::EnterWifiConfigMode() {
     hint += "\n\n";
     
     // 播报配置 WiFi 的提示
-    application.Alert(Lang::Strings::WIFI_CONFIG_MODE, hint.c_str(), "", Lang::Sounds::P3_WIFICONFIG);
+    application.Alert(Lang::Strings::WIFI_CONFIG_MODE, hint.c_str(), "gear", Lang::Sounds::OGG_WIFICONFIG);
+
+    #if CONFIG_USE_ACOUSTIC_WIFI_PROVISIONING
+    auto display = Board::GetInstance().GetDisplay();
+    auto codec = Board::GetInstance().GetAudioCodec();
+    int channel = 1;
+    if (codec) {
+        channel = codec->input_channels();
+    }
+    ESP_LOGI(TAG, "Start receiving WiFi credentials from audio, input channels: %d", channel);
+    audio_wifi_config::ReceiveWifiCredentialsFromAudio(&application, &wifi_ap, display, channel);
+    #endif
 #endif
     
     // Wait forever until reset after configuration
     while (true) {
-        int free_sram = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-        int min_free_sram = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
-        ESP_LOGI(TAG, "Free internal: %u minimal internal: %u", free_sram, min_free_sram);
+        // 循环播报配置 WiFi 的提示
+        application.Alert(Lang::Strings::WIFI_CONFIG_MODE, hint.c_str(), "neutral", Lang::Sounds::OGG_WIFICONFIG);
         vTaskDelay(pdMS_TO_TICKS(10000));
     }
 }
@@ -124,27 +136,9 @@ void WifiBoard::StartNetwork() {
     }
 }
 
-Http* WifiBoard::CreateHttp() {
-    return new EspHttp();
-}
-
-WebSocket* WifiBoard::CreateWebSocket() {
-    Settings settings("websocket", false);
-    std::string url = settings.GetString("url");
-    if (url.find("wss://") == 0) {
-        return new WebSocket(new TlsTransport());
-    } else {
-        return new WebSocket(new TcpTransport());
-    }
-    return nullptr;
-}
-
-Mqtt* WifiBoard::CreateMqtt() {
-    return new EspMqtt();
-}
-
-Udp* WifiBoard::CreateUdp() {
-    return new EspUdp();
+NetworkInterface* WifiBoard::GetNetwork() {
+    static EspNetwork network;
+    return &network;
 }
 
 const char* WifiBoard::GetNetworkStateIcon() {
@@ -153,7 +147,7 @@ const char* WifiBoard::GetNetworkStateIcon() {
     }
     auto& wifi_station = WifiStation::GetInstance();
     if (!wifi_station.IsConnected()) {
-        return FONT_AWESOME_WIFI_OFF;
+        return FONT_AWESOME_WIFI_SLASH;
     }
     int8_t rssi = wifi_station.GetRssi();
     if (rssi >= -60) {
@@ -168,15 +162,17 @@ const char* WifiBoard::GetNetworkStateIcon() {
 std::string WifiBoard::GetBoardJson() {
     // Set the board type for OTA
     auto& wifi_station = WifiStation::GetInstance();
-    std::string board_json = std::string("{\"type\":\"" BOARD_TYPE "\",");
-    board_json += "\"name\":\"" BOARD_NAME "\",";
+    std::string board_json = R"({)";
+    board_json += R"("type":")" + std::string(BOARD_TYPE) + R"(",)";
+    board_json += R"("name":")" + std::string(BOARD_NAME) + R"(",)";
     if (!wifi_config_mode_) {
-        board_json += "\"ssid\":\"" + wifi_station.GetSsid() + "\",";
-        board_json += "\"rssi\":" + std::to_string(wifi_station.GetRssi()) + ",";
-        board_json += "\"channel\":" + std::to_string(wifi_station.GetChannel()) + ",";
-        board_json += "\"ip\":\"" + wifi_station.GetIpAddress() + "\",";
+        board_json += R"("ssid":")" + wifi_station.GetSsid() + R"(",)";
+        board_json += R"("rssi":)" + std::to_string(wifi_station.GetRssi()) + R"(,)";
+        board_json += R"("channel":)" + std::to_string(wifi_station.GetChannel()) + R"(,)";
+        board_json += R"("ip":")" + wifi_station.GetIpAddress() + R"(",)";
     }
-    board_json += "\"mac\":\"" + SystemInfo::GetMacAddress() + "\"}";
+    board_json += R"("mac":")" + SystemInfo::GetMacAddress() + R"(")";
+    board_json += R"(})";
     return board_json;
 }
 
@@ -243,7 +239,10 @@ std::string WifiBoard::GetDeviceStatusJson() {
     }
     auto display = board.GetDisplay();
     if (display && display->height() > 64) { // For LCD display only
-        cJSON_AddStringToObject(screen, "theme", display->GetTheme().c_str());
+        auto theme = display->GetTheme();
+        if (theme != nullptr) {
+            cJSON_AddStringToObject(screen, "theme", theme->name().c_str());
+        }
     }
     cJSON_AddItemToObject(root, "screen", screen);
 

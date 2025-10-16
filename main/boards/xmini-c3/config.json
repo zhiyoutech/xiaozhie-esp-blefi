@@ -8,7 +8,6 @@
                 "CONFIG_FREERTOS_USE_TICKLESS_IDLE=y",
                 "CONFIG_USE_ESP_WAKE_WORD=y",
                 "CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y",
-                "CONFIG_COMPILER_OPTIMIZATION_PERF = y",
                 "CONFIG_BT_ENABLED=y",
                 "CONFIG_BT_GATTC_ENABLE=n",
                 "CONFIG_BT_BLE_SMP_ENABLE=n",
@@ -30,7 +29,8 @@
                 "CONFIG_HEAP_PLACE_FUNCTION_INTO_FLASH=y",
                 "CONFIG_VFS_SELECT_IN_RAM=n",
                 "CONFIG_GATTC_ENABLE=n",
-                "CONFIG_BLE_SMP_ENABLE=n"
+                "CONFIG_BLE_SMP_ENABLE=n",
+		        "CONFIG_SSID_PASSWORD_BY_BLE=y"
             ]
         }
     ]

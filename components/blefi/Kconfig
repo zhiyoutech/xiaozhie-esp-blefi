@@ -1,0 +1,9 @@
+menu "Blefi Component Configuration"
+
+config SSID_PASSWORD_BY_BLE
+    bool "Enable Blefi Component"
+    default y
+    help
+        Enable or disable Blefi component functionality.
+
+endmenu
